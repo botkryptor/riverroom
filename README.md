@@ -51,3 +51,4 @@ railway domain
 
 Railway uses `/health` to verify deployments. The service reads `PORT`
 automatically and stores persistent state under the configured `DATA_DIR`.
+After the initial setup, pushes to `main` trigger Railway deployments.
