@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071713" />
+    <title>Riverroom — Poker night, together</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main id="landing" class="landing hidden">
+      <nav class="landing-nav">
+        <a class="brand" href="/"><span class="brand-mark">R</span> Riverroom</a>
+        <span class="play-money-badge">Play chips only</span>
+      </nav>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">YOUR HOME GAME, ONLINE</p>
+          <h1>The table is ready.<br /><em>Bring your people.</em></h1>
+          <p class="hero-description">
+            Private poker rooms with voice chat, automatic settlements, and nothing to
+            download.
+          </p>
+          <form id="create-form" class="create-card">
+            <label for="room-name">Name your game</label>
+            <div class="create-row">
+              <input id="room-name" maxlength="50" value="Friday Night Poker" />
+              <button class="primary-button" type="submit">Create private room <span>→</span></button>
+            </div>
+            <p>Free to play · No account required · Share one link</p>
+          </form>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="hero-table">
+            <span class="mini-card red">A♥</span>
+            <span class="mini-card">K♠</span>
+            <div class="hero-pot"><small>POT</small><strong>2,480</strong></div>
+          </div>
+          <div class="floating-chip chip-one">25</div>
+          <div class="floating-chip chip-two">100</div>
+          <div class="floating-player player-one"><span>AM</span><b>Arjun</b></div>
+          <div class="floating-player player-two"><span>SK</span><b>Sakshi</b></div>
+          <div class="floating-player player-three"><span>VR</span><b>Varun</b></div>
+        </div>
+      </section>
+      <section class="feature-strip">
+        <article><span>01</span><h3>One link</h3><p>Friends join from any modern browser.</p></article>
+        <article><span>02</span><h3>Table talk</h3><p>Peer-to-peer voice keeps the banter alive.</p></article>
+        <article><span>03</span><h3>Clean books</h3><p>Know exactly who pays whom when you finish.</p></article>
+      </section>
+    </main>
+
+    <main id="room-app" class="room-shell hidden">
+      <header class="room-header">
+        <a class="brand" href="/"><span class="brand-mark">R</span> Riverroom</a>
+        <div class="room-title">
+          <span id="room-name-display">Poker room</span>
+          <span id="connection-status" class="status-dot">Connecting</span>
+        </div>
+        <div class="header-actions">
+          <button id="voice-button" class="secondary-button"><span>🎙</span> Join voice</button>
+          <button id="mute-button" class="icon-button hidden" title="Mute microphone">Mute</button>
+          <button id="share-button" class="primary-button compact">Copy invite link</button>
+        </div>
+      </header>
+
+      <section class="game-layout">
+        <div class="table-stage">
+          <div id="table" class="poker-table">
+            <div class="table-rail"></div>
+            <div class="felt-detail felt-one"></div>
+            <div class="felt-detail felt-two"></div>
+            <div class="table-center">
+              <div class="pot-label">POT <strong id="pot-value">0</strong></div>
+              <div id="board" class="board"></div>
+              <div id="hand-message" class="hand-message">Waiting for the host to start</div>
+            </div>
+            <div id="seats"></div>
+          </div>
+          <div id="action-bar" class="action-bar">
+            <div class="action-context">
+              <span id="turn-label">Take a seat to play</span>
+              <strong id="call-label"></strong>
+            </div>
+            <div class="bet-control">
+              <input id="bet-amount" type="number" min="1" placeholder="Amount" />
+            </div>
+            <div class="action-buttons">
+              <button data-action="fold" class="danger-button">Fold</button>
+              <button data-action="check" class="secondary-button">Check</button>
+              <button data-action="call" class="secondary-button">Call</button>
+              <button data-action="bet" class="primary-button">Bet</button>
+              <button data-action="raise" class="primary-button">Raise</button>
+              <button data-action="all-in" class="allin-button">All-in</button>
+            </div>
+            <button id="start-hand-button" class="primary-button start-button hidden">Deal next hand</button>
+          </div>
+        </div>
+
+        <aside class="side-panel">
+          <div class="tabs">
+            <button class="tab active" data-tab="ledger">Ledger</button>
+            <button class="tab" data-tab="activity">Activity</button>
+            <button class="tab" data-tab="settings">Game</button>
+          </div>
+
+          <section id="ledger-panel" class="panel-content active">
+            <div class="panel-heading">
+              <div><p class="eyebrow">LIVE SETTLEMENT</p><h2>Square up</h2></div>
+              <span id="ledger-balance-badge" class="balanced-badge">Balanced</span>
+            </div>
+            <p class="panel-help">Based on buy-ins and current chip stacks.</p>
+            <div id="ledger-rows" class="ledger-rows"></div>
+            <div class="settlement-card">
+              <h3>Who pays whom</h3>
+              <div id="settlement-list"></div>
+            </div>
+          </section>
+
+          <section id="activity-panel" class="panel-content">
+            <div class="panel-heading"><div><p class="eyebrow">TABLE LOG</p><h2>Activity</h2></div></div>
+            <div id="activity-list" class="activity-list"></div>
+          </section>
+
+          <section id="settings-panel" class="panel-content">
+            <div class="panel-heading"><div><p class="eyebrow">HOST CONTROLS</p><h2>Game setup</h2></div></div>
+            <form id="settings-form" class="settings-form">
+              <label>Small blind<input id="small-blind" type="number" min="1" /></label>
+              <label>Big blind<input id="big-blind" type="number" min="2" /></label>
+              <label>Starting stack<input id="starting-stack" type="number" min="20" /></label>
+              <button class="primary-button" type="submit">Save settings</button>
+            </form>
+            <div class="coming-soon">
+              <p class="eyebrow">NEXT DEAL</p>
+              <div><span>💣</span><p><strong>Bomb pots</strong><small>Planned</small></p></div>
+              <div><span>⑦</span><p><strong>7-2 bounty</strong><small>Planned</small></p></div>
+              <div><span>Ⅱ</span><p><strong>Double boards</strong><small>Planned</small></p></div>
+            </div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <div id="join-modal" class="modal hidden">
+      <form id="join-form" class="modal-card">
+        <span class="brand-mark large">R</span>
+        <p class="eyebrow">YOU'VE BEEN INVITED</p>
+        <h2>Pull up a chair.</h2>
+        <p>Choose the name your friends will see at the table.</p>
+        <label for="player-name">Display name</label>
+        <input id="player-name" maxlength="24" autocomplete="nickname" placeholder="Your name" autofocus />
+        <button class="primary-button" type="submit">Join the table</button>
+        <small>Play chips only. Riverroom does not process payments.</small>
+      </form>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <div id="remote-audio"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
