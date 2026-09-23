@@ -29,3 +29,21 @@ process payments or hold money.
 
 Bomb pots, double boards, and 7-2 bounty are represented in the game settings
 roadmap and are intentionally outside the first playable engine.
+
+## Deploy to Railway
+
+Riverroom includes Railway Infrastructure as Code under `.railway/`. The
+deployment creates one Singapore-hosted web service and a 500 MB persistent
+volume for room and ledger data.
+
+```bash
+railway login
+railway init
+railway config plan
+railway config apply
+railway service link web
+railway domain
+```
+
+Railway uses `/health` to verify deployments. The service reads `PORT`
+automatically and stores persistent state under the configured `DATA_DIR`.

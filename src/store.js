@@ -3,7 +3,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
-const dataDirectory = path.resolve(currentDirectory, "../data");
+const defaultDataDirectory = path.resolve(currentDirectory, "../data");
+export function resolveDataDirectory(environment = process.env) {
+  return path.resolve(environment.DATA_DIR || defaultDataDirectory);
+}
+
+const dataDirectory = resolveDataDirectory();
 const dataFile = path.join(dataDirectory, "rooms.json");
 const temporaryFile = path.join(dataDirectory, "rooms.tmp.json");
 let saveQueue = Promise.resolve();

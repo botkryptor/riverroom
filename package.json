@@ -4,14 +4,24 @@
   "private": true,
   "type": "module",
   "description": "Private browser poker rooms with voice chat and a live settlement ledger.",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "test": "node --test",
-    "check": "node --check src/server.js && node --check src/game.js && node --check public/app.js"
+    "check": "node --check src/server.js && node --check src/game.js && node --check public/app.js",
+    "check:railway": "tsc --noEmit --module nodenext --moduleResolution nodenext --target es2022 .railway/railway.ts"
   },
   "dependencies": {
     "express": "^5.1.0",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "railway": "^3.11.0",
+    "typescript": "^5.9.3"
   }
 }

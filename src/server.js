@@ -1,7 +1,9 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import express from "express";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import { startHand, performAction } from "./game.js";
@@ -60,10 +62,38 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server);
 
-app.use(express.json());
+app.set("trust proxy", 1);
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        connectSrc: ["'self'", "ws:", "wss:"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "https://fonts.googleapis.com"],
+        upgradeInsecureRequests: null,
+      },
+    },
+  }),
+);
+app.use(express.json({ limit: "32kb" }));
 app.use(express.static(publicDirectory));
 
-app.post("/api/rooms", async (request, response) => {
+app.get("/health", (_request, response) => {
+  response.json({ status: "ok" });
+});
+
+const createRoomLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many rooms created. Try again later." },
+});
+
+app.post("/api/rooms", createRoomLimiter, async (request, response) => {
   let id;
   do {
     id = roomCode();
@@ -376,6 +406,38 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(port, () => {
-  console.log(`Riverroom is running at http://localhost:${port}`);
-});
+export function startServer(listenPort = port) {
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(listenPort, () => {
+      server.off("error", reject);
+      const address = server.address();
+      const activePort = typeof address === "object" && address ? address.port : listenPort;
+      console.log(`Riverroom is running at http://localhost:${activePort}`);
+      resolve(activePort);
+    });
+  });
+}
+
+export async function stopServer() {
+  await saveRooms(rooms);
+  if (!server.listening) return;
+  await new Promise((resolve) => io.close(resolve));
+}
+
+async function shutdown(signal) {
+  console.log(`Received ${signal}; saving room state before shutdown.`);
+  const forcedExit = setTimeout(() => process.exit(1), 10_000);
+  forcedExit.unref();
+  await stopServer();
+  process.exit(0);
+}
+
+const isMainModule =
+  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isMainModule) {
+  await startServer();
+  process.once("SIGTERM", () => void shutdown("SIGTERM"));
+  process.once("SIGINT", () => void shutdown("SIGINT"));
+}
