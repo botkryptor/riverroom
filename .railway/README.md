@@ -22,7 +22,8 @@ railway domain
 
 If Railway asks for GitHub access, authorize only the `riverroom` repository.
 
-After the first apply, pushes to `main` deploy automatically through the GitHub
-source connection.
+After the first apply and granting the Railway GitHub App access to this private
+repository, pushes to `main` deploy automatically through the GitHub source
+connection.
 
 Live service: https://web-production-9aa1c.up.railway.app

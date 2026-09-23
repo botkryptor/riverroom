@@ -3,3 +3,4 @@ data/rooms.json
 .DS_Store
 npm-debug.log*
 .railway/config.json
+riverroom-production*.png
