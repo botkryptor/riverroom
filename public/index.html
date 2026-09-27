@@ -89,6 +89,7 @@
             <div class="action-context">
               <span id="turn-label">Take a seat to play</span>
               <strong id="call-label"></strong>
+              <span id="turn-countdown" class="turn-countdown hidden"></span>
             </div>
             <div class="bet-control">
               <input id="bet-amount" type="number" min="1" placeholder="Amount" />
@@ -136,6 +137,7 @@
               <label>Small blind<input id="small-blind" type="number" min="1" /></label>
               <label>Big blind<input id="big-blind" type="number" min="2" /></label>
               <label>Starting stack<input id="starting-stack" type="number" min="20" /></label>
+              <label>Turn timer (seconds)<input id="turn-time" type="number" min="10" max="120" /></label>
               <button class="primary-button" type="submit">Save settings</button>
             </form>
             <div class="coming-soon">

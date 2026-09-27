@@ -6,15 +6,22 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
-import { startHand, performAction } from "./game.js";
+import { expireTurn, startHand, performAction } from "./game.js";
 import { computeBalances, computeSettlements } from "./ledger.js";
-import { loadRooms, saveRooms } from "./store.js";
+import {
+  closeStore,
+  loadRooms,
+  saveRooms,
+  storageKind,
+  upsertUser,
+} from "./store.js";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 const publicDirectory = path.resolve(currentDirectory, "../public");
 const port = Number(process.env.PORT ?? 3000);
 const rooms = new Map();
 const voiceMembers = new Map();
+const turnTimers = new Map();
 
 function roomCode() {
   return randomBytes(4).toString("base64url").toLowerCase();
@@ -40,6 +47,7 @@ function hydrateRoom(saved) {
       bigBlind: 10,
       startingStack: 1000,
       maxPlayers: 9,
+      turnTimeSeconds: 30,
       ...saved.settings,
     },
     players: (saved.players ?? []).map((player) => ({
@@ -82,7 +90,7 @@ app.use(express.json({ limit: "32kb" }));
 app.use(express.static(publicDirectory));
 
 app.get("/health", (_request, response) => {
-  response.json({ status: "ok" });
+  response.json({ status: "ok", storage: storageKind });
 });
 
 const createRoomLimiter = rateLimit({
@@ -110,6 +118,7 @@ app.post("/api/rooms", createRoomLimiter, async (request, response) => {
       bigBlind: 10,
       startingStack: 1000,
       maxPlayers: 9,
+      turnTimeSeconds: 30,
     },
     players: [],
     ledger: [],
@@ -178,6 +187,8 @@ function publicState(room, viewerPlayerId) {
           actingSeat: room.hand.actingSeat,
           pot: room.players.reduce((sum, player) => sum + (player.totalBet ?? 0), 0),
           result: room.hand.result,
+          turnStartedAt: room.hand.turnStartedAt,
+          turnDeadlineAt: room.hand.turnDeadlineAt,
         }
       : null,
     ledger: balances,
@@ -192,6 +203,53 @@ function broadcastRoom(room) {
       io.to(player.socketId).emit("room-state", publicState(room, player.id));
     }
   }
+}
+
+function clearTurnTimer(roomId) {
+  clearTimeout(turnTimers.get(roomId));
+  turnTimers.delete(roomId);
+}
+
+function armTurnTimer(room) {
+  clearTurnTimer(room.id);
+  const hand = room.hand;
+  if (!hand || hand.result || hand.actingSeat == null || !hand.turnDeadlineAt) return;
+
+  const expected = {
+    handNumber: hand.number,
+    actingSeat: hand.actingSeat,
+    deadline: hand.turnDeadlineAt,
+  };
+  const timer = setTimeout(async () => {
+    const currentRoom = rooms.get(room.id);
+    const currentHand = currentRoom?.hand;
+    if (
+      !currentRoom ||
+      !currentHand ||
+      currentHand.result ||
+      currentHand.number !== expected.handNumber ||
+      currentHand.actingSeat !== expected.actingSeat ||
+      currentHand.turnDeadlineAt !== expected.deadline
+    ) {
+      return;
+    }
+
+    try {
+      const { player, action } = expireTurn(currentRoom);
+      addActivity(
+        currentRoom,
+        `${player.name} timed out and ${action === "check" ? "checked" : "folded"}.`,
+      );
+      if (currentRoom.hand?.result) addActivity(currentRoom, currentRoom.hand.result.message);
+      await saveRooms(rooms);
+      broadcastRoom(currentRoom);
+      armTurnTimer(currentRoom);
+    } catch (error) {
+      console.error("Could not expire turn", error);
+    }
+  }, Math.max(0, expected.deadline - Date.now()));
+  timer.unref();
+  turnTimers.set(room.id, timer);
 }
 
 function roomForSocket(socket) {
@@ -266,8 +324,10 @@ io.on("connection", (socket) => {
       socket.data.clientId = cleanClientId;
       socket.data.playerId = player.id;
       socket.join(room.id);
+      await upsertUser(cleanClientId, cleanName);
       await saveRooms(rooms);
       broadcastRoom(room);
+      armTurnTimer(room);
       callbackResult(callback, null, { playerId: player.id });
     } catch (error) {
       callbackResult(callback, error);
@@ -282,6 +342,7 @@ io.on("connection", (socket) => {
       addActivity(room, `Hand #${room.hand.number} started.`);
       await saveRooms(rooms);
       broadcastRoom(room);
+      armTurnTimer(room);
       callbackResult(callback);
     } catch (error) {
       callbackResult(callback, error);
@@ -297,6 +358,7 @@ io.on("connection", (socket) => {
       if (room.hand?.result) addActivity(room, room.hand.result.message);
       await saveRooms(rooms);
       broadcastRoom(room);
+      armTurnTimer(room);
       callbackResult(callback);
     } catch (error) {
       callbackResult(callback, error);
@@ -339,10 +401,25 @@ io.on("connection", (socket) => {
       const smallBlind = Math.floor(Number(settings.smallBlind));
       const bigBlind = Math.floor(Number(settings.bigBlind));
       const startingStack = Math.floor(Number(settings.startingStack));
-      if (smallBlind <= 0 || bigBlind < smallBlind || startingStack < bigBlind * 10) {
-        throw new Error("Use valid blinds and a stack of at least 10 big blinds");
+      const turnTimeSeconds = Math.floor(Number(settings.turnTimeSeconds));
+      if (
+        smallBlind <= 0 ||
+        bigBlind < smallBlind ||
+        startingStack < bigBlind * 10 ||
+        turnTimeSeconds < 10 ||
+        turnTimeSeconds > 120
+      ) {
+        throw new Error(
+          "Use valid blinds, at least 10 big blinds, and a 10–120 second timer",
+        );
       }
-      room.settings = { ...room.settings, smallBlind, bigBlind, startingStack };
+      room.settings = {
+        ...room.settings,
+        smallBlind,
+        bigBlind,
+        startingStack,
+        turnTimeSeconds,
+      };
       addActivity(room, `Blinds updated to ${smallBlind}/${bigBlind}.`);
       await saveRooms(rooms);
       broadcastRoom(room);
@@ -421,8 +498,10 @@ export function startServer(listenPort = port) {
 
 export async function stopServer() {
   await saveRooms(rooms);
+  for (const roomId of turnTimers.keys()) clearTurnTimer(roomId);
   if (!server.listening) return;
   await new Promise((resolve) => io.close(resolve));
+  await closeStore();
 }
 
 async function shutdown(signal) {

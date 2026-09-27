@@ -4,3 +4,4 @@ data/rooms.json
 npm-debug.log*
 .railway/config.json
 riverroom-production*.png
+riverroom-turn-timer.png

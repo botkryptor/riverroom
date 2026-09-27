@@ -43,9 +43,23 @@ function canAct(player) {
   return activeInHand(player) && !player.allIn;
 }
 
+function setActingSeat(room, seat) {
+  room.hand.actingSeat = seat;
+  if (seat == null) {
+    room.hand.turnStartedAt = null;
+    room.hand.turnDeadlineAt = null;
+    return;
+  }
+
+  const startedAt = Date.now();
+  room.hand.turnStartedAt = startedAt;
+  room.hand.turnDeadlineAt =
+    startedAt + Number(room.settings.turnTimeSeconds ?? 30) * 1000;
+}
+
 function publicResult(room, message, result = {}) {
   room.hand.result = { message, ...result };
-  room.hand.actingSeat = null;
+  setActingSeat(room, null);
   room.hand.revealed = true;
   room.hand.pot = potSize(room);
   room.hand.completedAt = new Date().toISOString();
@@ -109,7 +123,7 @@ function dealStreet(room) {
     return;
   }
 
-  hand.actingSeat = nextSeatFrom(room, hand.dealerSeat, canAct)?.seat ?? null;
+  setActingSeat(room, nextSeatFrom(room, hand.dealerSeat, canAct)?.seat ?? null);
 }
 
 function bettingRoundComplete(room) {
@@ -134,7 +148,7 @@ function continueHand(room, previousSeat) {
 
   const next = nextSeatFrom(room, previousSeat, canAct);
   if (!next) dealStreet(room);
-  else room.hand.actingSeat = next.seat;
+  else setActingSeat(room, next.seat);
 }
 
 export function startHand(room) {
@@ -173,6 +187,8 @@ export function startHand(room) {
     minRaise: room.settings.bigBlind,
     actedSeats: [],
     actingSeat: null,
+    turnStartedAt: null,
+    turnDeadlineAt: null,
     result: null,
     revealed: false,
     startedAt: new Date().toISOString(),
@@ -192,10 +208,12 @@ export function startHand(room) {
   contribute(bigBlind, room.settings.bigBlind);
   bigBlind.lastAction = `Big blind ${bigBlind.streetBet}`;
   room.hand.currentBet = Math.max(smallBlind.streetBet, bigBlind.streetBet);
-  room.hand.actingSeat =
+  setActingSeat(
+    room,
     players.length === 2
       ? smallBlind.seat
-      : nextSeatFrom(room, bigBlind.seat, canAct)?.seat ?? null;
+      : nextSeatFrom(room, bigBlind.seat, canAct)?.seat ?? null,
+  );
 
   if (room.players.filter(canAct).length <= 1) continueHand(room, bigBlind.seat);
   return room.hand;
@@ -279,4 +297,18 @@ export function performAction(room, playerId, action, requestedAmount = 0) {
   hand.pot = potSize(room);
   continueHand(room, player.seat);
   return hand;
+}
+
+export function expireTurn(room) {
+  const hand = room.hand;
+  if (!hand || hand.result || hand.actingSeat == null) {
+    throw new Error("No active turn to expire");
+  }
+
+  const player = room.players.find((candidate) => candidate.seat === hand.actingSeat);
+  if (!player) throw new Error("Acting player not found");
+  const action = hand.currentBet === player.streetBet ? "check" : "fold";
+  performAction(room, player.id, action);
+  player.lastAction = `${player.lastAction} · timed out`;
+  return { player, action };
 }

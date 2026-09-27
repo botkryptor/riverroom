@@ -8,6 +8,9 @@ let state = null;
 let voiceStream = null;
 let muted = false;
 const peers = new Map();
+let audioContext = null;
+let lastChimedTurn = null;
+let countdownTimer = null;
 
 if (!clientId) {
   clientId = crypto.randomUUID();
@@ -47,6 +50,36 @@ function emitWithResult(event, payload = {}) {
       else reject(new Error(result?.error ?? "Something went wrong"));
     });
   });
+}
+
+function unlockAudio() {
+  audioContext ??= new AudioContext();
+  if (audioContext.state === "suspended") void audioContext.resume();
+}
+
+function playTurnChime() {
+  unlockAudio();
+  if (audioContext.state !== "running") return;
+  const start = audioContext.currentTime;
+  for (const [offset, frequency] of [
+    [0, 659.25],
+    [0.13, 880],
+  ]) {
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.value = frequency;
+    gain.gain.setValueAtTime(0.0001, start + offset);
+    gain.gain.exponentialRampToValueAtTime(0.18, start + offset + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + offset + 0.18);
+    oscillator.connect(gain).connect(audioContext.destination);
+    oscillator.start(start + offset);
+    oscillator.stop(start + offset + 0.2);
+  }
+}
+
+for (const eventName of ["pointerdown", "keydown"]) {
+  window.addEventListener(eventName, unlockAudio, { once: true });
 }
 
 if (!roomId) {
@@ -103,6 +136,13 @@ socket.on("disconnect", () => {
 
 socket.on("room-state", (nextState) => {
   state = nextState;
+  const viewer = state.players.find((player) => player.id === state.viewerPlayerId);
+  const isTurn = viewer && state.hand?.actingSeat === viewer.seat;
+  const turnKey = isTurn
+    ? `${state.hand.number}:${state.hand.street}:${state.hand.turnStartedAt}`
+    : null;
+  if (turnKey && turnKey !== lastChimedTurn) playTurnChime();
+  if (turnKey) lastChimedTurn = turnKey;
   render();
 });
 
@@ -134,6 +174,7 @@ function renderSeats() {
     seat.innerHTML = `
       <div class="player-cards">${(player.cards ?? []).map(cardMarkup).join("")}</div>
       <div class="seat-box">
+        ${isActing ? '<span class="seat-timer" data-turn-seconds></span>' : ""}
         ${player.streetBet ? `<span class="bet-chip">● ${player.streetBet}</span>` : ""}
         <div class="player-name">
           ${isDealer ? '<span class="dealer-button">D</span>' : ""}
@@ -239,6 +280,28 @@ function renderActions() {
       : "Between hands";
   element("call-label").textContent = isTurn && callAmount ? `${callAmount} to call` : "";
   element("start-hand-button").classList.toggle("hidden", !(isHost && handComplete));
+  updateTurnTimer();
+}
+
+function updateTurnTimer() {
+  const deadline = state?.hand?.turnDeadlineAt;
+  const countdown = element("turn-countdown");
+  if (!deadline || state.hand?.result) {
+    countdown?.classList.add("hidden");
+    document.querySelectorAll("[data-turn-seconds]").forEach((item) => {
+      item.textContent = "";
+    });
+    return;
+  }
+
+  const seconds = Math.ceil(Math.max(0, deadline - Date.now()) / 1000);
+  countdown.textContent = `${seconds}s`;
+  countdown.classList.remove("hidden");
+  countdown.classList.toggle("urgent", seconds <= 5);
+  document.querySelectorAll("[data-turn-seconds]").forEach((item) => {
+    item.textContent = seconds;
+    item.classList.toggle("urgent", seconds <= 5);
+  });
 }
 
 function render() {
@@ -252,6 +315,7 @@ function render() {
   element("small-blind").value = state.settings.smallBlind;
   element("big-blind").value = state.settings.bigBlind;
   element("starting-stack").value = state.settings.startingStack;
+  element("turn-time").value = state.settings.turnTimeSeconds;
   const isHost = state.viewerPlayerId === state.hostPlayerId;
   [...element("settings-form").elements].forEach((control) => {
     control.disabled = !isHost;
@@ -261,6 +325,9 @@ function render() {
   renderActivity();
   renderActions();
 }
+
+countdownTimer = window.setInterval(updateTurnTimer, 250);
+window.addEventListener("beforeunload", () => window.clearInterval(countdownTimer));
 
 actionButtons.forEach((button) => {
   button.addEventListener("click", async () => {
@@ -291,6 +358,7 @@ element("settings-form")?.addEventListener("submit", async (event) => {
       smallBlind: element("small-blind").value,
       bigBlind: element("big-blind").value,
       startingStack: element("starting-stack").value,
+      turnTimeSeconds: element("turn-time").value,
     });
     toast("Game settings saved");
   } catch (error) {

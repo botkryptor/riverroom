@@ -247,6 +247,11 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
   background: #10261f; box-shadow: 0 10px 20px rgba(0,0,0,.28);
 }
 .seat.active .seat-box { border-color: var(--green); box-shadow: 0 0 0 3px rgba(40,209,124,.1), 0 10px 20px rgba(0,0,0,.28); }
+.seat-timer {
+  position: absolute; right: -8px; top: -9px; display: grid; width: 24px; height: 24px; place-items: center;
+  border: 2px solid var(--green); border-radius: 50%; color: #062016; background: var(--green); font-size: 9px; font-weight: 800;
+}
+.seat-timer.urgent { border-color: var(--red); color: #fff; background: var(--red); animation: timer-pulse .7s infinite alternate; }
 .seat.disconnected { opacity: .5; }
 .seat.folded { opacity: .48; filter: grayscale(.7); }
 .player-name { display: flex; justify-content: center; align-items: center; gap: 5px; overflow: hidden; font-size: 11px; font-weight: 700; white-space: nowrap; text-overflow: ellipsis; }
@@ -261,6 +266,8 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
 }
 .action-context { width: 150px; display: flex; flex-direction: column; color: var(--muted); font-size: 10px; }
 .action-context strong { margin-top: 3px; color: var(--ink); font-size: 13px; }
+.turn-countdown { margin-top: 4px; color: var(--green); font-size: 11px; font-weight: 800; }
+.turn-countdown.urgent { color: var(--red); }
 .bet-control { width: 95px; }
 .bet-control input { min-height: 40px; }
 .action-buttons { display: flex; gap: 7px; margin-left: auto; }
@@ -312,6 +319,10 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
 .modal-card small { display: block; margin-top: 14px; color: #678278; font-size: 9px; text-align: center; }
 .toast { position: fixed; z-index: 30; left: 50%; bottom: 25px; transform: translateX(-50%); padding: 12px 18px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); background: #17362d; box-shadow: 0 12px 30px rgba(0,0,0,.35); font-size: 12px; }
 .toast.error { color: #ffb0ac; background: #3a1d1c; }
+
+@keyframes timer-pulse {
+  to { transform: scale(1.12); }
+}
 
 @media (max-width: 1050px) {
   .game-layout { grid-template-columns: 1fr 300px; }

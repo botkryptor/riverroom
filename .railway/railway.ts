@@ -1,6 +1,7 @@
 import {
   defineRailway,
   github,
+  postgres,
   project,
   service,
   volume,
@@ -13,6 +14,7 @@ export default defineRailway(() => {
     region,
     sizeMB: 500,
   });
+  const database = postgres("database", { region });
 
   const web = service("web", {
     source: github("botkryptor/riverroom", {
@@ -28,6 +30,7 @@ export default defineRailway(() => {
       [region]: 1,
     },
     env: {
+      DATABASE_URL: database.env.DATABASE_URL,
       DATA_DIR: "/app/data",
       NODE_ENV: "production",
     },
@@ -37,6 +40,6 @@ export default defineRailway(() => {
   });
 
   return project("riverroom", {
-    resources: [roomData, web],
+    resources: [database, roomData, web],
   });
 });

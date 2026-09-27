@@ -14,7 +14,7 @@ test("serves a secured health endpoint", async () => {
   try {
     const response = await fetch(`http://127.0.0.1:${port}/health`);
     assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), { status: "ok" });
+    assert.deepEqual(await response.json(), { status: "ok", storage: "json" });
     assert.equal(response.headers.get("x-powered-by"), null);
     assert.match(response.headers.get("content-security-policy"), /default-src 'self'/);
   } finally {

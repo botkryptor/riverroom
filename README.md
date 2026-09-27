@@ -7,6 +7,9 @@ A private, play-money poker room for friends. The MVP includes:
 - Peer-to-peer voice chat
 - Automatic buy-in and settlement ledger
 - Persistent room balances
+- PostgreSQL-backed room and user data
+- Configurable turn timer with automatic check/fold
+- Chime notification when it is your turn
 - Host controls and reconnect support
 
 ## Live app
@@ -37,8 +40,8 @@ roadmap and are intentionally outside the first playable engine.
 ## Deploy to Railway
 
 Riverroom includes Railway Infrastructure as Code under `.railway/`. The
-deployment creates one Singapore-hosted web service and a 500 MB persistent
-volume for room and ledger data.
+deployment creates one Singapore-hosted web service, PostgreSQL for room and
+user data, and a temporary legacy volume used to migrate existing rooms.
 
 ```bash
 railway login
@@ -50,6 +53,8 @@ railway domain
 ```
 
 Railway uses `/health` to verify deployments. The service reads `PORT`
-automatically and stores persistent state under the configured `DATA_DIR`.
+automatically and connects to PostgreSQL through `DATABASE_URL`. Local
+development falls back to `data/rooms.json` when no database URL is configured.
+When PostgreSQL is empty, existing rooms under `DATA_DIR` are imported once.
 After the Railway GitHub App is granted access to this private repository,
 pushes to `main` trigger Railway deployments.
