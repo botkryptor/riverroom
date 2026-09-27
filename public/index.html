@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <meta name="theme-color" content="#071713" />
     <title>Riverroom — Poker night, together</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -16,7 +19,7 @@
   <body>
     <main id="landing" class="landing hidden">
       <nav class="landing-nav">
-        <a class="brand" href="/"><span class="brand-mark">R</span> Riverroom</a>
+        <a class="brand" href="/"><span class="brand-mark">R</span><span class="brand-name">Riverroom</span></a>
         <span class="play-money-badge">Play chips only</span>
       </nav>
       <section class="hero">
@@ -60,15 +63,20 @@
 
     <main id="room-app" class="room-shell hidden">
       <header class="room-header">
-        <a class="brand" href="/"><span class="brand-mark">R</span> Riverroom</a>
+        <a class="brand" href="/"><span class="brand-mark">R</span><span class="brand-name">Riverroom</span></a>
         <div class="room-title">
           <span id="room-name-display">Poker room</span>
           <span id="connection-status" class="status-dot">Connecting</span>
         </div>
         <div class="header-actions">
-          <button id="voice-button" class="secondary-button"><span>🎙</span> Join voice</button>
+          <button id="voice-button" class="secondary-button">
+            <span aria-hidden="true">🎙</span><span id="voice-label">Join voice</span>
+          </button>
           <button id="mute-button" class="icon-button hidden" title="Mute microphone">Mute</button>
-          <button id="share-button" class="primary-button compact">Copy invite link</button>
+          <button id="share-button" class="primary-button compact">
+            <span class="share-label-full">Copy invite link</span>
+            <span class="share-label-mobile">Invite</span>
+          </button>
         </div>
       </header>
 

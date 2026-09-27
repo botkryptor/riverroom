@@ -5,3 +5,5 @@ npm-debug.log*
 .railway/config.json
 riverroom-production*.png
 riverroom-turn-timer.png
+mobile-baseline-*.png
+riverroom-mobile-*.png

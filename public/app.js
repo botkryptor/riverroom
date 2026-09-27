@@ -422,7 +422,7 @@ async function joinVoice() {
     voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     const result = await emitWithResult("voice-ready");
     for (const peerId of result.peers) await createPeer(peerId, true);
-    element("voice-button").textContent = "Leave voice";
+    element("voice-label").textContent = "Leave voice";
     element("voice-button").dataset.joined = "true";
     element("mute-button").classList.remove("hidden");
     toast("Voice chat connected");
@@ -438,7 +438,7 @@ function leaveVoice() {
   voiceStream?.getTracks().forEach((track) => track.stop());
   voiceStream = null;
   for (const peerId of peers.keys()) removePeer(peerId);
-  element("voice-button").textContent = "🎙 Join voice";
+  element("voice-label").textContent = "Join voice";
   element("voice-button").dataset.joined = "";
   element("mute-button").classList.add("hidden");
 }

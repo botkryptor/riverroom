@@ -10,6 +10,7 @@ A private, play-money poker room for friends. The MVP includes:
 - PostgreSQL-backed room and user data
 - Configurable turn timer with automatic check/fold
 - Chime notification when it is your turn
+- Mobile browser layout with iPhone safe-area and touch support
 - Host controls and reconnect support
 
 ## Live app
