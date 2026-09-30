@@ -20,6 +20,7 @@ function serializeRoom(room) {
     settings: room.settings,
     ledger: room.ledger,
     activity: room.activity.slice(-100),
+    chat: (room.chat ?? []).slice(-200),
     players: room.players.map((player) => ({
       id: player.id,
       clientId: player.clientId,

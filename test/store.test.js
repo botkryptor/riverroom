@@ -32,6 +32,15 @@ test("stores rooms and users in PostgreSQL", async () => {
     settings: { smallBlind: 5, bigBlind: 10, startingStack: 1000 },
     ledger: [],
     activity: [],
+    chat: [
+      {
+        id: "message-1",
+        playerId: "player-1",
+        name: "Alice",
+        message: "Hello table",
+        at: new Date().toISOString(),
+      },
+    ],
     players: [
       {
         id: "player-1",
@@ -72,6 +81,7 @@ test("imports legacy JSON rooms into an empty PostgreSQL database", async () => 
     settings: {},
     ledger: [],
     activity: [],
+    chat: [],
     players: [],
   };
 

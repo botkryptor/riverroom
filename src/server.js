@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
+import { normalizeChatMessage } from "./chat.js";
 import { expireTurn, startHand, performAction } from "./game.js";
 import { computeBalances, computeSettlements } from "./ledger.js";
 import { chooseSeat } from "./seating.js";
@@ -43,6 +44,7 @@ function hydrateRoom(saved) {
     hand: null,
     ledger: saved.ledger ?? [],
     activity: saved.activity ?? [],
+    chat: saved.chat ?? [],
     settings: {
       smallBlind: 5,
       bigBlind: 10,
@@ -124,6 +126,7 @@ app.post("/api/rooms", createRoomLimiter, async (request, response) => {
     players: [],
     ledger: [],
     activity: [],
+    chat: [],
   });
   rooms.set(id, room);
   addActivity(room, "Room created.");
@@ -201,6 +204,7 @@ function publicState(room, viewerPlayerId) {
     ledger: balances,
     settlement,
     activity: room.activity.slice(-50),
+    chat: room.chat.slice(-100),
   };
 }
 
@@ -362,6 +366,28 @@ io.on("connection", (socket) => {
       await saveRooms(rooms);
       broadcastRoom(room);
       armTurnTimer(room);
+      callbackResult(callback);
+    } catch (error) {
+      callbackResult(callback, error);
+    }
+  });
+
+  socket.on("chat-message", async ({ message }, callback) => {
+    try {
+      const room = roomForSocket(socket);
+      const player = room.players.find((candidate) => candidate.id === socket.data.playerId);
+      if (!player) throw new Error("Player not found");
+      const cleanMessage = normalizeChatMessage(message);
+      room.chat.push({
+        id: randomUUID(),
+        playerId: player.id,
+        name: player.name,
+        message: cleanMessage,
+        at: new Date().toISOString(),
+      });
+      room.chat = room.chat.slice(-200);
+      await saveRooms(rooms);
+      broadcastRoom(room);
       callbackResult(callback);
     } catch (error) {
       callbackResult(callback, error);

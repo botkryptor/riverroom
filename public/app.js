@@ -1,4 +1,5 @@
 import { presetWagerAmount, wagerLimits } from "/wager.js";
+import { relativeSeat } from "/table.js";
 
 const socket = io();
 const roomMatch = window.location.pathname.match(/^\/room\/([^/]+)/);
@@ -205,12 +206,21 @@ function initials(name) {
 
 function renderSeats() {
   const seats = element("seats");
+  const viewer = state.players.find((player) => player.id === state.viewerPlayerId);
   seats.innerHTML = "";
   for (const player of state.players) {
     const isActing = state.hand?.actingSeat === player.seat;
     const isDealer = state.hand?.dealerSeat === player.seat;
+    const isViewer = player.id === state.viewerPlayerId;
+    const tablePosition = relativeSeat(
+      player.seat,
+      viewer?.seat ?? player.seat,
+      state.settings.maxPlayers,
+    );
     const seat = document.createElement("div");
-    seat.className = `seat seat-${player.seat} ${isActing ? "active" : ""} ${
+    seat.className = `seat seat-${player.seat} seat-position-${tablePosition} ${
+      isViewer ? "viewer" : ""
+    } ${isActing ? "active" : ""} ${
       player.folded ? "folded" : ""
     } ${player.connected ? "" : "disconnected"}`;
     seat.innerHTML = `
@@ -221,7 +231,7 @@ function renderSeats() {
         <div class="player-name">
           ${isDealer ? '<span class="dealer-button">D</span>' : ""}
           <span>${escapeHtml(player.name)}</span>
-          ${player.id === state.viewerPlayerId ? "<small>(you)</small>" : ""}
+          ${isViewer ? "<small>(you)</small>" : ""}
         </div>
         <div class="player-stack">${player.stack.toLocaleString()} chips</div>
         <div class="player-action">${escapeHtml(player.lastAction || (player.connected ? "" : "Offline"))}</div>
@@ -290,6 +300,24 @@ function renderActivity() {
       </div>`,
     )
     .join("");
+}
+
+function renderChat() {
+  const messages = element("chat-messages");
+  const chat = state.chat ?? [];
+  messages.innerHTML =
+    chat.length === 0
+      ? '<p class="chat-empty">No messages yet. Say hello.</p>'
+      : chat
+          .map(
+            (item) => `
+            <div class="chat-message ${item.playerId === state.viewerPlayerId ? "mine" : ""}">
+              <div><strong>${escapeHtml(item.name)}</strong><time>${new Date(item.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time></div>
+              <p>${escapeHtml(item.message)}</p>
+            </div>`,
+          )
+          .join("");
+  messages.scrollTop = messages.scrollHeight;
 }
 
 function renderActions() {
@@ -370,6 +398,7 @@ function render() {
   });
   renderSeats();
   renderLedger();
+  renderChat();
   renderActivity();
   renderActions();
 }
@@ -495,12 +524,27 @@ element("settings-form")?.addEventListener("submit", async (event) => {
   }
 });
 
+element("chat-form")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const input = element("chat-input");
+  const message = input.value.trim();
+  if (!message) return;
+  try {
+    await emitWithResult("chat-message", { message });
+    input.value = "";
+    input.focus();
+  } catch (error) {
+    toast(error.message, true);
+  }
+});
+
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach((candidate) => candidate.classList.remove("active"));
     document.querySelectorAll(".panel-content").forEach((panel) => panel.classList.remove("active"));
     tab.classList.add("active");
     element(`${tab.dataset.tab}-panel`).classList.add("active");
+    if (tab.dataset.tab === "chat") renderChat();
   });
 });
 

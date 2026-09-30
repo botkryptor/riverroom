@@ -132,6 +132,7 @@
         <aside class="side-panel">
           <div class="tabs">
             <button class="tab active" data-tab="ledger">Ledger</button>
+            <button class="tab" data-tab="chat">Chat</button>
             <button class="tab" data-tab="activity">Activity</button>
             <button class="tab" data-tab="settings">Game</button>
           </div>
@@ -147,6 +148,21 @@
               <h3>Who pays whom</h3>
               <div id="settlement-list"></div>
             </div>
+          </section>
+
+          <section id="chat-panel" class="panel-content chat-panel">
+            <div class="panel-heading"><div><p class="eyebrow">ROOM CHAT</p><h2>Table talk</h2></div></div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <form id="chat-form" class="chat-form">
+              <input
+                id="chat-input"
+                maxlength="500"
+                autocomplete="off"
+                placeholder="Message the table"
+                aria-label="Chat message"
+              />
+              <button class="primary-button" type="submit">Send</button>
+            </form>
           </section>
 
           <section id="activity-panel" class="panel-content">
