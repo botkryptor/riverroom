@@ -22,4 +22,6 @@ test("keeps mobile controls touch-sized and prevents input zoom", async () => {
   assert.match(css, /\.wager-presets button, \.seat-options button \{ min-height: 44px/);
   assert.match(css, /\.settings-form input, \.modal-card input, \.create-card input, \.chat-form input \{ font-size: 16px/);
   assert.match(css, /\.player-cards \.card \{ width: 28px; height: 41px/);
+  assert.match(css, /grid-template-columns: repeat\(5, 1fr\)/);
+  assert.match(css, /\.history-cards \.card \{ width: 30px; height: 42px/);
 });

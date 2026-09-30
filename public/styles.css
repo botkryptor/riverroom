@@ -293,7 +293,7 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
 .wager-custom button { min-width: 92px; }
 
 .side-panel { overflow-y: auto; border-left: 1px solid var(--line); background: #0b1d18; }
-.tabs { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px 12px 0; background: #0b1d18; }
+.tabs { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 12px 0; background: #0b1d18; }
 .tab { height: 42px; border: 0; border-bottom: 2px solid transparent; color: #6f8c81; background: transparent; font-size: 11px; font-weight: 700; }
 .tab.active { color: var(--ink); border-color: var(--green); }
 .panel-content { display: none; padding: 24px 18px; }
@@ -318,6 +318,30 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
 .activity-item { position: relative; padding: 11px 0 11px 18px; border-bottom: 1px solid var(--line); color: #b2c5bd; font-size: 11px; line-height: 1.45; }
 .activity-item::before { content: ""; position: absolute; left: 2px; top: 17px; width: 5px; height: 5px; border-radius: 50%; background: #316451; }
 .activity-item time { display: block; margin-top: 3px; color: #59766b; font-size: 9px; }
+.hand-history-list { display: flex; flex-direction: column; gap: 12px; }
+.history-empty { margin-top: 70px; color: var(--muted); font-size: 11px; text-align: center; }
+.history-card { padding: 14px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.018); }
+.history-card > header { display: flex; align-items: center; justify-content: space-between; }
+.history-card > header div { display: flex; align-items: baseline; gap: 7px; }
+.history-card > header strong { font-size: 12px; }
+.history-card > header time { color: #607c71; font-size: 8px; }
+.history-card > header > span { color: var(--gold); font-size: 10px; font-weight: 700; }
+.history-result { margin: 8px 0 13px; color: #b8cbc4; font-size: 10px; line-height: 1.4; }
+.history-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 10px; border-radius: 10px; background: #102821; }
+.history-row small, .history-board small { color: var(--muted); font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.history-cards { display: flex; align-items: center; gap: 4px; min-height: 36px; }
+.history-cards .card { width: 27px; height: 38px; padding: 3px; border-radius: 4px; font-size: 12px; }
+.history-board { display: grid; grid-template-columns: 1.8fr .8fr .8fr; gap: 6px; margin-top: 7px; }
+.history-board > div { min-width: 0; padding: 8px; border: 1px solid var(--line); border-radius: 9px; }
+.history-board small { display: block; margin-bottom: 6px; }
+.history-not-dealt { color: #607c71; font-size: 9px; white-space: nowrap; }
+.history-card details { margin-top: 10px; border-top: 1px solid var(--line); }
+.history-card summary { padding-top: 10px; color: var(--green); cursor: pointer; font-size: 9px; font-weight: 700; }
+.history-actions { margin-top: 8px; }
+.history-actions > div { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.history-actions span { font-size: 10px; }
+.history-actions small { color: #617d72; font-size: 8px; text-transform: capitalize; }
+.history-actions strong { grid-column: 1 / -1; color: #b9ccc5; font-size: 9px; font-weight: 500; }
 .chat-panel { height: calc(100vh - 116px); min-height: 420px; }
 .chat-panel.active { display: flex; flex-direction: column; }
 .chat-messages {
@@ -448,8 +472,9 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
     overflow: visible; border-left: 0; border-top: 1px solid var(--line);
   }
   .tabs { top: calc(58px + env(safe-area-inset-top)); }
-  .tab { min-height: 44px; }
+  .tab { min-height: 44px; font-size: 10px; }
   .panel-content { padding: 24px 20px; }
+  .history-cards .card { width: 30px; height: 42px; font-size: 13px; }
   .chat-panel { height: 460px; min-height: 460px; }
   .chat-messages { min-height: 280px; }
   .settings-form input, .modal-card input, .create-card input, .chat-form input { font-size: 16px; }

@@ -11,6 +11,7 @@ A private, play-money poker room for friends. The MVP includes:
 - Configurable turn timer with automatic check/fold
 - Chime notification when it is your turn
 - Mobile browser layout with iPhone safe-area and touch support
+- Private card log with board streets, results, pots, and actions
 - Host controls and reconnect support
 
 ## Live app

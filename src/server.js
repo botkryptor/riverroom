@@ -8,6 +8,12 @@ import { createServer } from "node:http";
 import { Server } from "socket.io";
 import { normalizeChatMessage } from "./chat.js";
 import { expireTurn, startHand, performAction } from "./game.js";
+import {
+  archiveCompletedHand,
+  handHistoryForViewer,
+  initializeHandLog,
+  recordHandAction,
+} from "./hand-history.js";
 import { computeBalances, computeSettlements } from "./ledger.js";
 import { chooseSeat } from "./seating.js";
 import {
@@ -45,6 +51,7 @@ function hydrateRoom(saved) {
     ledger: saved.ledger ?? [],
     activity: saved.activity ?? [],
     chat: saved.chat ?? [],
+    handHistory: saved.handHistory ?? [],
     settings: {
       smallBlind: 5,
       bigBlind: 10,
@@ -127,6 +134,7 @@ app.post("/api/rooms", createRoomLimiter, async (request, response) => {
     ledger: [],
     activity: [],
     chat: [],
+    handHistory: [],
   });
   rooms.set(id, room);
   addActivity(room, "Room created.");
@@ -205,6 +213,7 @@ function publicState(room, viewerPlayerId) {
     settlement,
     activity: room.activity.slice(-50),
     chat: room.chat.slice(-100),
+    handHistory: handHistoryForViewer(room, viewerPlayerId),
   };
 }
 
@@ -246,7 +255,10 @@ function armTurnTimer(room) {
     }
 
     try {
+      const street = currentHand.street;
       const { player, action } = expireTurn(currentRoom);
+      recordHandAction(currentRoom, player, street);
+      archiveCompletedHand(currentRoom);
       addActivity(
         currentRoom,
         `${player.name} timed out and ${action === "check" ? "checked" : "folded"}.`,
@@ -346,6 +358,8 @@ io.on("connection", (socket) => {
       const room = roomForSocket(socket);
       requireHost(socket, room);
       startHand(room);
+      initializeHandLog(room);
+      archiveCompletedHand(room);
       addActivity(room, `Hand #${room.hand.number} started.`);
       await saveRooms(rooms);
       broadcastRoom(room);
@@ -360,7 +374,10 @@ io.on("connection", (socket) => {
     try {
       const room = roomForSocket(socket);
       const player = room.players.find((candidate) => candidate.id === socket.data.playerId);
+      const street = room.hand?.street;
       performAction(room, player.id, action, amount);
+      recordHandAction(room, player, street);
+      archiveCompletedHand(room);
       addActivity(room, `${player.name}: ${player.lastAction}.`);
       if (room.hand?.result) addActivity(room, room.hand.result.message);
       await saveRooms(rooms);

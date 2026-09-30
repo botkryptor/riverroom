@@ -320,6 +320,55 @@ function renderChat() {
   messages.scrollTop = messages.scrollHeight;
 }
 
+function historyCards(cards) {
+  return cards.length
+    ? cards.map(cardMarkup).join("")
+    : '<span class="history-not-dealt">Not dealt</span>';
+}
+
+function renderHandHistory() {
+  const history = state.handHistory ?? [];
+  element("hand-history-list").innerHTML =
+    history.length === 0
+      ? '<p class="history-empty">Completed hands will appear here.</p>'
+      : history
+          .map(
+            (hand) => `
+            <article class="history-card">
+              <header>
+                <div><strong>Hand #${hand.number}</strong><time>${new Date(hand.completedAt ?? hand.startedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time></div>
+                <span>Pot ${hand.pot.toLocaleString()}</span>
+              </header>
+              <p class="history-result">${escapeHtml(hand.result)}</p>
+              <div class="history-row hero-hand">
+                <small>Your hand</small>
+                <div class="history-cards">${historyCards(hand.holeCards)}</div>
+              </div>
+              <div class="history-board">
+                <div><small>Flop</small><span class="history-cards">${historyCards(hand.board.slice(0, 3))}</span></div>
+                <div><small>Turn</small><span class="history-cards">${historyCards(hand.board.slice(3, 4))}</span></div>
+                <div><small>River</small><span class="history-cards">${historyCards(hand.board.slice(4, 5))}</span></div>
+              </div>
+              <details>
+                <summary>Action log · ${hand.actions.length}</summary>
+                <div class="history-actions">
+                  ${hand.actions
+                    .map(
+                      (action) => `
+                      <div>
+                        <span>${escapeHtml(action.name)}</span>
+                        <small>${escapeHtml(action.street)}</small>
+                        <strong>${escapeHtml(action.action)}</strong>
+                      </div>`,
+                    )
+                    .join("")}
+                </div>
+              </details>
+            </article>`,
+          )
+          .join("");
+}
+
 function renderActions() {
   const viewer = state.players.find((player) => player.id === state.viewerPlayerId);
   const isHost = state.viewerPlayerId === state.hostPlayerId;
@@ -398,6 +447,7 @@ function render() {
   });
   renderSeats();
   renderLedger();
+  renderHandHistory();
   renderChat();
   renderActivity();
   renderActions();

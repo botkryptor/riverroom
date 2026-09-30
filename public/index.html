@@ -132,6 +132,7 @@
         <aside class="side-panel">
           <div class="tabs">
             <button class="tab active" data-tab="ledger">Ledger</button>
+            <button class="tab" data-tab="history">Cards</button>
             <button class="tab" data-tab="chat">Chat</button>
             <button class="tab" data-tab="activity">Activity</button>
             <button class="tab" data-tab="settings">Game</button>
@@ -148,6 +149,12 @@
               <h3>Who pays whom</h3>
               <div id="settlement-list"></div>
             </div>
+          </section>
+
+          <section id="history-panel" class="panel-content">
+            <div class="panel-heading"><div><p class="eyebrow">HAND HISTORY</p><h2>Card log</h2></div></div>
+            <p class="panel-help">Your cards, the board, and every action from completed hands.</p>
+            <div id="hand-history-list" class="hand-history-list"></div>
           </section>
 
           <section id="chat-panel" class="panel-content chat-panel">
