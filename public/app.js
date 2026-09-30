@@ -224,10 +224,10 @@ function renderSeats() {
       player.folded ? "folded" : ""
     } ${player.connected ? "" : "disconnected"}`;
     seat.innerHTML = `
+      <div class="bet-chip">${player.streetBet ? `● ${player.streetBet}` : ""}</div>
       <div class="player-cards">${(player.cards ?? []).map(cardMarkup).join("")}</div>
       <div class="seat-box">
         ${isActing ? '<span class="seat-timer" data-turn-seconds></span>' : ""}
-        ${player.streetBet ? `<span class="bet-chip">● ${player.streetBet}</span>` : ""}
         <div class="player-name">
           ${isDealer ? '<span class="dealer-button">D</span>' : ""}
           <span>${escapeHtml(player.name)}</span>

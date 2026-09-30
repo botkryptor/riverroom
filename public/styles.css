@@ -241,9 +241,9 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
 .seat-position-6 { left: 102%; top: 38%; }
 .seat-position-7 { left: 95%; top: 76%; }
 .seat-position-8 { left: 74%; top: 98%; }
-.player-cards { height: 39px; display: flex; justify-content: center; margin-bottom: -5px; }
-.player-cards .card { width: 34px; height: 49px; padding: 4px; font-size: 14px; transform: rotate(-3deg); }
-.player-cards .card + .card { margin-left: -5px; transform: rotate(4deg); }
+.player-cards { height: 52px; display: flex; justify-content: center; margin-bottom: -6px; }
+.player-cards .card { width: 40px; height: 58px; padding: 5px; font-size: 16px; transform: rotate(-3deg); }
+.player-cards .card + .card { margin-left: -6px; transform: rotate(4deg); }
 .seat-box {
   position: relative; min-height: 58px; padding: 9px 10px 7px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px;
   background: #10261f; box-shadow: 0 10px 20px rgba(0,0,0,.28);
@@ -260,7 +260,7 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
 .player-stack { margin-top: 4px; color: var(--gold); font-size: 11px; font-weight: 600; }
 .player-action { position: absolute; left: 50%; top: calc(100% + 4px); transform: translateX(-50%); color: #a2bbb1; font-size: 9px; white-space: nowrap; }
 .dealer-button { display: inline-grid; width: 15px; height: 15px; place-items: center; border-radius: 50%; color: #12231d; background: #f1ead9; font-size: 8px; }
-.bet-chip { position: absolute; left: 50%; top: -24px; transform: translateX(-50%); color: #f7dc96; font-size: 10px; font-weight: 700; }
+.bet-chip { min-height: 16px; margin-bottom: 4px; color: #f7dc96; font-size: 10px; font-weight: 700; line-height: 16px; }
 
 .action-bar {
   position: absolute; left: 28px; right: 28px; bottom: 22px; min-height: 68px; display: flex; align-items: center; gap: 13px;
@@ -447,9 +447,8 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
   .seat-box { min-height: 48px; padding: 7px 6px 6px; border-radius: 10px; }
   .player-name, .player-stack { font-size: 10px; }
   .player-action { max-width: 96px; overflow: hidden; text-overflow: ellipsis; }
-  .player-cards { height: 32px; }
-  .player-cards .card { width: 28px; height: 41px; font-size: 12px; }
-  .bet-chip { top: -19px; }
+  .player-cards { height: 43px; margin-bottom: -5px; }
+  .player-cards .card { width: 34px; height: 49px; font-size: 14px; }
   .action-bar {
     position: fixed; z-index: 9; left: 0; right: 0; bottom: 0;
     display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px;

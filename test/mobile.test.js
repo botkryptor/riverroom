@@ -21,7 +21,18 @@ test("keeps mobile controls touch-sized and prevents input zoom", async () => {
   assert.match(css, /\.wager-custom input \{ min-height: 44px; font-size: 16px/);
   assert.match(css, /\.wager-presets button, \.seat-options button \{ min-height: 44px/);
   assert.match(css, /\.settings-form input, \.modal-card input, \.create-card input, \.chat-form input \{ font-size: 16px/);
-  assert.match(css, /\.player-cards \.card \{ width: 28px; height: 41px/);
+  assert.match(css, /\.player-cards \.card \{ width: 34px; height: 49px/);
   assert.match(css, /grid-template-columns: repeat\(5, 1fr\)/);
   assert.match(css, /\.history-cards \.card \{ width: 30px; height: 42px/);
+});
+
+test("keeps blind wagers above enlarged hole cards", async () => {
+  const [app, css] = await Promise.all([
+    readFile(new URL("../public/app.js", import.meta.url), "utf8"),
+    readFile(new URL("../public/styles.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(app, /class="bet-chip".*class="player-cards"/s);
+  assert.match(css, /\.player-cards \.card \{ width: 40px; height: 58px/);
+  assert.match(css, /\.bet-chip \{ min-height: 16px; margin-bottom: 4px/);
 });
