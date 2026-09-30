@@ -1,3 +1,5 @@
+import { presetWagerAmount, wagerLimits } from "/wager.js";
+
 const socket = io();
 const roomMatch = window.location.pathname.match(/^\/room\/([^/]+)/);
 const roomId = roomMatch?.[1];
@@ -11,6 +13,8 @@ const peers = new Map();
 let audioContext = null;
 let lastChimedTurn = null;
 let countdownTimer = null;
+let selectedSeat = null;
+let wagerAction = null;
 
 if (!clientId) {
   clientId = crypto.randomUUID();
@@ -105,16 +109,54 @@ if (!roomId) {
   roomApp.classList.remove("hidden");
   const savedName = localStorage.getItem(playerNameKey);
   if (savedName) joinRoom(savedName);
-  else joinModal.classList.remove("hidden");
+  else {
+    joinModal.classList.remove("hidden");
+    void loadSeatAvailability();
+  }
 }
+
+async function loadSeatAvailability() {
+  try {
+    const response = await fetch(`/api/rooms/${roomId}`);
+    if (!response.ok) return;
+    const room = await response.json();
+    const occupiedSeats = new Set(room.occupiedSeats ?? []);
+    document.querySelectorAll("[data-seat]").forEach((button) => {
+      if (button.dataset.seat === "") return;
+      const occupied = occupiedSeats.has(Number(button.dataset.seat));
+      button.disabled = occupied;
+      button.title = occupied ? "Seat occupied" : "";
+      if (occupied && selectedSeat === Number(button.dataset.seat)) selectSeat(null);
+    });
+  } catch {
+    selectSeat(null);
+  }
+}
+
+function selectSeat(seat) {
+  selectedSeat = seat;
+  document.querySelectorAll("[data-seat]").forEach((button) => {
+    const buttonSeat = button.dataset.seat === "" ? null : Number(button.dataset.seat);
+    const selected = buttonSeat === selectedSeat;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+document.querySelectorAll("[data-seat]").forEach((button) => {
+  button.addEventListener("click", () => {
+    selectSeat(button.dataset.seat === "" ? null : Number(button.dataset.seat));
+  });
+});
 
 async function joinRoom(name) {
   try {
-    await emitWithResult("join-room", { roomId, name, clientId });
+    await emitWithResult("join-room", { roomId, name, clientId, seat: selectedSeat });
     localStorage.setItem(playerNameKey, name);
     joinModal.classList.add("hidden");
   } catch (error) {
     joinModal.classList.remove("hidden");
+    void loadSeatAvailability();
     toast(error.message, true);
   }
 }
@@ -267,12 +309,18 @@ function renderActions() {
       button.textContent = `Call ${Math.min(callAmount, viewer?.stack ?? 0)}`;
     }
     if (action === "bet") button.classList.toggle("hidden", currentBet > 0);
-    if (action === "raise") button.classList.toggle("hidden", currentBet === 0);
+    if (action === "raise") {
+      button.classList.toggle("hidden", currentBet === 0);
+      button.disabled = !isTurn || viewer.streetBet + viewer.stack <= currentBet;
+    }
   });
 
-  element("bet-amount").disabled = !isTurn;
-  element("bet-amount").placeholder =
-    currentBet > 0 ? `Raise to ${currentBet + (state.hand?.minRaise ?? 0)}` : "Bet amount";
+  if (
+    wagerAction &&
+    (!isTurn || (wagerAction === "bet" && currentBet > 0) || (wagerAction === "raise" && currentBet === 0))
+  ) {
+    closeWager();
+  }
   element("turn-label").textContent = isTurn
     ? "Your decision"
     : state.hand?.actingSeat != null
@@ -331,16 +379,97 @@ window.addEventListener("beforeunload", () => window.clearInterval(countdownTime
 
 actionButtons.forEach((button) => {
   button.addEventListener("click", async () => {
+    if (button.dataset.action === "bet" || button.dataset.action === "raise") {
+      openWager(button.dataset.action);
+      return;
+    }
     try {
-      await emitWithResult("player-action", {
-        action: button.dataset.action,
-        amount: element("bet-amount").value,
-      });
-      element("bet-amount").value = "";
+      await emitWithResult("player-action", { action: button.dataset.action });
     } catch (error) {
       toast(error.message, true);
     }
   });
+});
+
+function wagerContext(action = wagerAction) {
+  const viewer = state.players.find((player) => player.id === state.viewerPlayerId);
+  return {
+    action,
+    bigBlind: state.settings.bigBlind,
+    currentBet: state.hand.currentBet,
+    minRaise: state.hand.minRaise,
+    pot: state.hand.pot,
+    stack: viewer.stack,
+    streetBet: viewer.streetBet,
+  };
+}
+
+function openWager(action) {
+  wagerAction = action;
+  const limits = wagerLimits(wagerContext(action));
+  const input = element("bet-amount");
+  input.min = limits.minimum;
+  input.max = limits.maximum;
+  input.value = limits.minimum;
+  element("wager-title").textContent = action === "raise" ? "Raise to" : "Bet amount";
+  element("wager-limits").textContent = `Min ${limits.minimum.toLocaleString()} · Max ${limits.maximum.toLocaleString()}`;
+  element("confirm-wager").textContent = action === "raise" ? "Raise" : "Bet";
+  element("wager-panel").classList.remove("hidden");
+  element("wager-panel").setAttribute("aria-hidden", "false");
+  input.focus();
+  input.select();
+}
+
+function closeWager() {
+  wagerAction = null;
+  element("wager-panel").classList.add("hidden");
+  element("wager-panel").setAttribute("aria-hidden", "true");
+  element("bet-amount").value = "";
+}
+
+document.querySelectorAll("[data-wager-fraction]").forEach((button) => {
+  button.addEventListener("click", () => {
+    if (!wagerAction) return;
+    element("bet-amount").value = presetWagerAmount(
+      wagerContext(),
+      Number(button.dataset.wagerFraction),
+    );
+  });
+});
+
+element("close-wager")?.addEventListener("click", closeWager);
+
+element("confirm-wager")?.addEventListener("click", async () => {
+  if (!wagerAction) return;
+  const input = element("bet-amount");
+  const amount = Number(input.value);
+  const limits = wagerLimits(wagerContext());
+  if (
+    !Number.isInteger(amount) ||
+    amount < limits.minimum ||
+    amount > limits.maximum
+  ) {
+    toast(`Choose an amount from ${limits.minimum} to ${limits.maximum}`, true);
+    return;
+  }
+  try {
+    await emitWithResult("player-action", {
+      action: wagerAction,
+      amount,
+    });
+    closeWager();
+  } catch (error) {
+    toast(error.message, true);
+  }
+});
+
+element("wager-all-in")?.addEventListener("click", async () => {
+  try {
+    await emitWithResult("player-action", { action: "all-in" });
+    closeWager();
+  } catch (error) {
+    toast(error.message, true);
+  }
 });
 
 element("start-hand-button")?.addEventListener("click", async () => {

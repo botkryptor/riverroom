@@ -11,7 +11,7 @@
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "test": "node --test",
-    "check": "node --check src/server.js && node --check src/game.js && node --check public/app.js",
+    "check": "node --check src/server.js && node --check src/game.js && node --check src/seating.js && node --check public/app.js && node --check public/wager.js",
     "check:railway": "tsc --noEmit --module nodenext --moduleResolution nodenext --target es2022 .railway/railway.ts"
   },
   "dependencies": {

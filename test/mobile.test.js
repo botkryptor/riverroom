@@ -18,6 +18,7 @@ test("keeps mobile controls touch-sized and prevents input zoom", async () => {
   const css = await readFile(new URL("../public/styles.css", import.meta.url), "utf8");
 
   assert.match(css, /\.action-buttons button \{ min-height: 44px/);
-  assert.match(css, /\.bet-control input \{ min-height: 44px; font-size: 16px/);
+  assert.match(css, /\.wager-custom input \{ min-height: 44px; font-size: 16px/);
+  assert.match(css, /\.wager-presets button, \.seat-options button \{ min-height: 44px/);
   assert.match(css, /\.settings-form input, \.modal-card input, \.create-card input \{ font-size: 16px/);
 });

@@ -8,6 +8,7 @@ import { createServer } from "node:http";
 import { Server } from "socket.io";
 import { expireTurn, startHand, performAction } from "./game.js";
 import { computeBalances, computeSettlements } from "./ledger.js";
+import { chooseSeat } from "./seating.js";
 import {
   closeStore,
   loadRooms,
@@ -133,7 +134,13 @@ app.post("/api/rooms", createRoomLimiter, async (request, response) => {
 app.get("/api/rooms/:roomId", (request, response) => {
   const room = rooms.get(request.params.roomId);
   if (!room) return response.status(404).json({ error: "Room not found" });
-  return response.json({ id: room.id, name: room.name, players: room.players.length });
+  return response.json({
+    id: room.id,
+    name: room.name,
+    players: room.players.length,
+    maxPlayers: room.settings.maxPlayers,
+    occupiedSeats: room.players.map((player) => player.seat),
+  });
 });
 
 app.get("/room/:roomId", (_request, response) => {
@@ -269,7 +276,7 @@ function callbackResult(callback, error = null, result = {}) {
 }
 
 io.on("connection", (socket) => {
-  socket.on("join-room", async ({ roomId, name, clientId }, callback) => {
+  socket.on("join-room", async ({ roomId, name, clientId, seat: requestedSeat }, callback) => {
     try {
       const room = rooms.get(String(roomId));
       if (!room) throw new Error("Room not found");
@@ -280,14 +287,10 @@ io.on("connection", (socket) => {
 
       let player = room.players.find((candidate) => candidate.clientId === cleanClientId);
       if (!player) {
-        if (room.players.length >= room.settings.maxPlayers) throw new Error("The table is full");
         if (room.players.some((candidate) => candidate.name.toLowerCase() === cleanName.toLowerCase())) {
           throw new Error("That name is already seated");
         }
-        const occupiedSeats = new Set(room.players.map((candidate) => candidate.seat));
-        const seat = Array.from({ length: 9 }, (_, index) => index).find(
-          (candidate) => !occupiedSeats.has(candidate),
-        );
+        const seat = chooseSeat(room.players, requestedSeat, room.settings.maxPlayers);
         player = {
           id: randomUUID(),
           clientId: cleanClientId,

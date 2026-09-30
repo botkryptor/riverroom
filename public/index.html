@@ -99,16 +99,31 @@
               <strong id="call-label"></strong>
               <span id="turn-countdown" class="turn-countdown hidden"></span>
             </div>
-            <div class="bet-control">
-              <input id="bet-amount" type="number" min="1" placeholder="Amount" />
-            </div>
             <div class="action-buttons">
               <button data-action="fold" class="danger-button">Fold</button>
               <button data-action="check" class="secondary-button">Check</button>
               <button data-action="call" class="secondary-button">Call</button>
               <button data-action="bet" class="primary-button">Bet</button>
               <button data-action="raise" class="primary-button">Raise</button>
-              <button data-action="all-in" class="allin-button">All-in</button>
+            </div>
+            <div id="wager-panel" class="wager-panel hidden" aria-hidden="true">
+              <div class="wager-heading">
+                <div>
+                  <p id="wager-title">Raise to</p>
+                  <small id="wager-limits"></small>
+                </div>
+                <button id="close-wager" class="icon-button wager-close" type="button" aria-label="Close">×</button>
+              </div>
+              <div class="wager-presets">
+                <button type="button" data-wager-fraction="0.5">½ pot</button>
+                <button type="button" data-wager-fraction="0.75">¾ pot</button>
+                <button type="button" data-wager-fraction="1">Pot</button>
+                <button type="button" id="wager-all-in" class="allin-button">All-in</button>
+              </div>
+              <div class="wager-custom">
+                <input id="bet-amount" type="number" inputmode="numeric" min="1" step="1" aria-label="Wager amount" />
+                <button id="confirm-wager" class="primary-button" type="button">Raise</button>
+              </div>
             </div>
             <button id="start-hand-button" class="primary-button start-button hidden">Deal next hand</button>
           </div>
@@ -167,6 +182,21 @@
         <p>Choose the name your friends will see at the table.</p>
         <label for="player-name">Display name</label>
         <input id="player-name" maxlength="24" autocomplete="nickname" placeholder="Your name" autofocus />
+        <fieldset class="seat-picker">
+          <legend>Choose your seat</legend>
+          <div id="seat-options" class="seat-options">
+            <button type="button" class="selected" data-seat="" aria-pressed="true">Auto</button>
+            <button type="button" data-seat="0" aria-pressed="false">1</button>
+            <button type="button" data-seat="1" aria-pressed="false">2</button>
+            <button type="button" data-seat="2" aria-pressed="false">3</button>
+            <button type="button" data-seat="3" aria-pressed="false">4</button>
+            <button type="button" data-seat="4" aria-pressed="false">5</button>
+            <button type="button" data-seat="5" aria-pressed="false">6</button>
+            <button type="button" data-seat="6" aria-pressed="false">7</button>
+            <button type="button" data-seat="7" aria-pressed="false">8</button>
+            <button type="button" data-seat="8" aria-pressed="false">9</button>
+          </div>
+        </fieldset>
         <button class="primary-button" type="submit">Join the table</button>
         <small>Play chips only. Riverroom does not process payments.</small>
       </form>

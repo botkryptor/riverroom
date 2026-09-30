@@ -270,11 +270,27 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
 .action-context strong { margin-top: 3px; color: var(--ink); font-size: 13px; }
 .turn-countdown { margin-top: 4px; color: var(--green); font-size: 11px; font-weight: 800; }
 .turn-countdown.urgent { color: var(--red); }
-.bet-control { width: 95px; }
-.bet-control input { min-height: 40px; }
 .action-buttons { display: flex; gap: 7px; margin-left: auto; }
 .action-buttons button { min-height: 40px; padding: 0 14px; font-size: 11px; }
 .start-button { margin-left: auto; }
+.wager-panel {
+  position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 6; width: min(420px, calc(100vw - 56px));
+  padding: 15px; border: 1px solid rgba(40, 209, 124, .24); border-radius: 15px;
+  background: #102821; box-shadow: 0 22px 60px rgba(0,0,0,.45);
+}
+.wager-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.wager-heading p { margin: 0 0 2px; font-size: 13px; font-weight: 700; }
+.wager-heading small { color: var(--muted); font-size: 10px; }
+.wager-close { width: 34px; min-height: 34px; padding: 0; font-size: 20px; }
+.wager-presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+.wager-presets button {
+  min-height: 40px; padding: 0 8px; border: 1px solid var(--line); border-radius: 9px;
+  color: var(--ink); background: #1a352d; font-size: 11px; font-weight: 700;
+}
+.wager-presets .allin-button { color: #171107; background: var(--gold); }
+.wager-custom { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 9px; }
+.wager-custom input { min-height: 44px; font-size: 16px; }
+.wager-custom button { min-width: 92px; }
 
 .side-panel { overflow-y: auto; border-left: 1px solid var(--line); background: #0b1d18; }
 .tabs { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: repeat(3, 1fr); padding: 10px 12px 0; background: #0b1d18; }
@@ -319,6 +335,15 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
 .modal-card input { margin-bottom: 12px; }
 .modal-card button { width: 100%; }
 .modal-card small { display: block; margin-top: 14px; color: #678278; font-size: 9px; text-align: center; }
+.seat-picker { margin: 2px 0 14px; padding: 0; border: 0; }
+.seat-picker legend { margin-bottom: 8px; color: #b9ccc5; font-size: 12px; font-weight: 600; }
+.seat-options { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+.seat-options button {
+  min-height: 42px; padding: 0; border: 1px solid var(--line); border-radius: 9px;
+  color: var(--muted); background: #0a1c17; font-size: 12px; font-weight: 700;
+}
+.seat-options button.selected { border-color: var(--green); color: #062016; background: var(--green); }
+.seat-options button:disabled { color: #50675e; background: #13251f; text-decoration: line-through; }
 .toast { position: fixed; z-index: 30; left: 50%; bottom: 25px; transform: translateX(-50%); padding: 12px 18px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); background: #17362d; box-shadow: 0 12px 30px rgba(0,0,0,.35); font-size: 12px; }
 .toast.error { color: #ffb0ac; background: #3a1d1c; }
 
@@ -387,21 +412,21 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
   .bet-chip { top: -19px; }
   .action-bar {
     position: fixed; z-index: 9; left: 0; right: 0; bottom: 0;
-    display: grid; grid-template-columns: minmax(0, 1fr) 92px; gap: 8px;
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px;
     min-height: 0; padding: 9px 10px calc(9px + env(safe-area-inset-bottom));
     border-right: 0; border-bottom: 0; border-left: 0; border-radius: 14px 14px 0 0;
   }
   .action-context { width: auto; min-width: 0; justify-content: center; }
-  .bet-control { width: 92px; }
-  .bet-control input { min-height: 44px; font-size: 16px; }
   .action-buttons {
-    grid-column: 1 / -1; display: grid; grid-auto-flow: column;
+    display: grid; grid-auto-flow: column;
     grid-auto-columns: minmax(58px, 1fr); gap: 6px; width: 100%; overflow-x: auto;
     scrollbar-width: none;
   }
   .action-buttons::-webkit-scrollbar { display: none; }
   .action-buttons button { min-height: 44px; padding: 0 8px; font-size: 11px; }
   .start-button { grid-column: 1 / -1; width: 100%; min-height: 46px; margin: 0; }
+  .wager-panel { right: 10px; width: calc(100vw - 20px); }
+  .wager-presets button, .seat-options button { min-height: 44px; }
   .side-panel {
     min-height: 500px; padding-bottom: calc(150px + env(safe-area-inset-bottom));
     overflow: visible; border-left: 0; border-top: 1px solid var(--line);
@@ -463,10 +488,10 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
   .seat-7 { left: 4%; top: 35%; }
   .seat-8 { left: 20%; top: 8%; }
   .action-bar {
-    grid-template-columns: 130px 92px minmax(0, 1fr); align-items: center;
+    grid-template-columns: 130px minmax(0, 1fr); align-items: center;
     padding-top: 7px; padding-bottom: calc(7px + env(safe-area-inset-bottom));
   }
   .action-buttons { grid-column: auto; }
-  .start-button { grid-column: 3; }
+  .start-button { grid-column: 2; }
   .side-panel { min-height: 360px; }
 }
