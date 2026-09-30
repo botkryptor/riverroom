@@ -26,7 +26,7 @@ test("keeps mobile controls touch-sized and prevents input zoom", async () => {
   assert.match(css, /\.history-cards \.card \{ width: 30px; height: 42px/);
 });
 
-test("keeps blind wagers above compact hole cards", async () => {
+test("enlarges only the viewer hand and community cards", async () => {
   const [app, css] = await Promise.all([
     readFile(new URL("../public/app.js", import.meta.url), "utf8"),
     readFile(new URL("../public/styles.css", import.meta.url), "utf8"),
@@ -34,6 +34,9 @@ test("keeps blind wagers above compact hole cards", async () => {
 
   assert.match(app, /class="bet-chip".*class="player-cards"/s);
   assert.match(css, /\.player-cards \.card \{ width: 34px; height: 49px/);
+  assert.match(css, /\.seat\.viewer \.player-cards \.card \{ width: 40px; height: 58px/);
+  assert.match(css, /\.card \{ width: 40px; padding: 5px; font-size: 17px/);
+  assert.match(css, /\.seat\.viewer \.player-cards \.card \{ width: 34px; height: 49px/);
   assert.match(css, /\.card-suit \{ align-self: center; font-size: 1\.45em/);
   assert.match(css, /\.bet-chip \{ min-height: 16px; margin-bottom: 4px/);
 });

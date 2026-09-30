@@ -222,10 +222,10 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
 .table-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .pot-label { margin-bottom: 13px; color: #9cc5b2; font-size: 9px; letter-spacing: .13em; }
 .pot-label strong { margin-left: 5px; color: var(--ink); font-size: 14px; letter-spacing: 0; }
-.board { display: flex; gap: 7px; min-height: 72px; }
+.board { display: flex; gap: 7px; min-height: 82px; }
 .card {
-  width: clamp(42px, 4.3vw, 58px); aspect-ratio: .72; display: flex; flex-direction: column; align-items: flex-start; padding: 7px; border-radius: 6px;
-  color: #15211d; background: #f7f0df; box-shadow: 0 7px 15px rgba(0,0,0,.25); font-family: "Newsreader", serif; font-size: clamp(17px, 2vw, 24px); font-weight: 600;
+  width: clamp(48px, 5vw, 66px); aspect-ratio: .72; display: flex; flex-direction: column; align-items: flex-start; padding: 8px; border-radius: 6px;
+  color: #15211d; background: #f7f0df; box-shadow: 0 7px 15px rgba(0,0,0,.25); font-family: "Newsreader", serif; font-size: clamp(19px, 2.2vw, 27px); font-weight: 600;
 }
 .card-rank { line-height: .85; }
 .card-suit { align-self: center; font-size: 1.45em; line-height: .8; }
@@ -246,6 +246,9 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
 .player-cards { height: 39px; display: flex; justify-content: center; margin-bottom: -5px; }
 .player-cards .card { width: 34px; height: 49px; padding: 4px; font-size: 14px; transform: rotate(-3deg); }
 .player-cards .card + .card { margin-left: -5px; transform: rotate(4deg); }
+.seat.viewer .player-cards { height: 52px; margin-bottom: -6px; }
+.seat.viewer .player-cards .card { width: 40px; height: 58px; padding: 5px; font-size: 16px; }
+.seat.viewer .player-cards .card + .card { margin-left: -6px; }
 .seat-box {
   position: relative; min-height: 58px; padding: 9px 10px 7px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px;
   background: #10261f; box-shadow: 0 10px 20px rgba(0,0,0,.28);
@@ -433,8 +436,8 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
   .table-rail { inset: -11px; border-width: 4px; }
   .felt-detail { width: 90px; height: 90px; }
   .table-center { padding: 76px 48px; }
-  .board { min-height: 48px; gap: 3px; }
-  .card { width: 34px; padding: 4px; font-size: 15px; }
+  .board { min-height: 58px; gap: 3px; }
+  .card { width: 40px; padding: 5px; font-size: 17px; }
   .hand-message { max-width: 180px; text-align: center; }
   .seat { width: 96px; transform: translate(-50%, -50%); }
   .seat-position-0 { left: 50%; top: 94%; }
@@ -451,6 +454,8 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
   .player-action { max-width: 96px; overflow: hidden; text-overflow: ellipsis; }
   .player-cards { height: 32px; }
   .player-cards .card { width: 28px; height: 41px; font-size: 12px; }
+  .seat.viewer .player-cards { height: 43px; margin-bottom: -5px; }
+  .seat.viewer .player-cards .card { width: 34px; height: 49px; font-size: 14px; }
   .action-bar {
     position: fixed; z-index: 9; left: 0; right: 0; bottom: 0;
     display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px;
