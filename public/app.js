@@ -1,3 +1,4 @@
+import { cardMarkup } from "/cards.js";
 import { presetWagerAmount, wagerLimits } from "/wager.js";
 import { relativeSeat } from "/table.js";
 
@@ -188,13 +189,6 @@ socket.on("room-state", (nextState) => {
   if (turnKey) lastChimedTurn = turnKey;
   render();
 });
-
-function cardMarkup(card) {
-  if (!card) return '<span class="card back"></span>';
-  const suitSymbols = { s: "♠", h: "♥", d: "♦", c: "♣" };
-  const red = card.suit === "h" || card.suit === "d";
-  return `<span class="card ${red ? "red" : ""}">${card.rank}${suitSymbols[card.suit]}</span>`;
-}
 
 function initials(name) {
   return name

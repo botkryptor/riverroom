@@ -224,9 +224,11 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
 .pot-label strong { margin-left: 5px; color: var(--ink); font-size: 14px; letter-spacing: 0; }
 .board { display: flex; gap: 7px; min-height: 72px; }
 .card {
-  width: clamp(42px, 4.3vw, 58px); aspect-ratio: .72; padding: 7px; border-radius: 6px;
+  width: clamp(42px, 4.3vw, 58px); aspect-ratio: .72; display: flex; flex-direction: column; align-items: flex-start; padding: 7px; border-radius: 6px;
   color: #15211d; background: #f7f0df; box-shadow: 0 7px 15px rgba(0,0,0,.25); font-family: "Newsreader", serif; font-size: clamp(17px, 2vw, 24px); font-weight: 600;
 }
+.card-rank { line-height: .85; }
+.card-suit { align-self: center; font-size: 1.45em; line-height: .8; }
 .card.red { color: #c83e3a; }
 .card.back { background: repeating-linear-gradient(45deg, #143c31, #143c31 5px, #1c5141 5px, #1c5141 10px); border: 2px solid #d9cbaa; }
 .hand-message { min-height: 18px; margin-top: 13px; color: rgba(237,247,242,.65); font-size: 11px; }
@@ -241,9 +243,9 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
 .seat-position-6 { left: 102%; top: 38%; }
 .seat-position-7 { left: 95%; top: 76%; }
 .seat-position-8 { left: 74%; top: 98%; }
-.player-cards { height: 52px; display: flex; justify-content: center; margin-bottom: -6px; }
-.player-cards .card { width: 40px; height: 58px; padding: 5px; font-size: 16px; transform: rotate(-3deg); }
-.player-cards .card + .card { margin-left: -6px; transform: rotate(4deg); }
+.player-cards { height: 39px; display: flex; justify-content: center; margin-bottom: -5px; }
+.player-cards .card { width: 34px; height: 49px; padding: 4px; font-size: 14px; transform: rotate(-3deg); }
+.player-cards .card + .card { margin-left: -5px; transform: rotate(4deg); }
 .seat-box {
   position: relative; min-height: 58px; padding: 9px 10px 7px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px;
   background: #10261f; box-shadow: 0 10px 20px rgba(0,0,0,.28);
@@ -447,8 +449,8 @@ button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
   .seat-box { min-height: 48px; padding: 7px 6px 6px; border-radius: 10px; }
   .player-name, .player-stack { font-size: 10px; }
   .player-action { max-width: 96px; overflow: hidden; text-overflow: ellipsis; }
-  .player-cards { height: 43px; margin-bottom: -5px; }
-  .player-cards .card { width: 34px; height: 49px; font-size: 14px; }
+  .player-cards { height: 32px; }
+  .player-cards .card { width: 28px; height: 41px; font-size: 12px; }
   .action-bar {
     position: fixed; z-index: 9; left: 0; right: 0; bottom: 0;
     display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px;
